@@ -1,191 +1,190 @@
-# live_states
+# live_states 🚀
 
-A high-performance, lightweight state management framework for Flutter that implements a pure MVVM architecture with **Zone-based automatic dependency tracking**.
+**Stop watching, start living.**  
+A surgical precision, high-performance MVVM framework for Flutter that eliminates boilerplate with **Zone-based automatic dependency tracking**.
 
-`live_states` is designed to eliminate boilerplate code. By leveraging Dart's `Zone` mechanism, it automatically detects which data your UI depends on during the build process, ensuring surgical precision in rebuilds without manual listener management.
+[![Pub Version](https://img.shields.io/pub/v/live_states)](https://pub.dev/packages/live_states)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
+---
+
+## 📸 Demo
+
+![LiveStates Demo](./gif/live_states.gif)
+
+---
+
+## ✨ The "Aha!" Moment
+
+### 🪄 Implicit vs. Explicit Tracking
+Stop manually listing what you want to watch. In other frameworks, missing a `watch` call means your UI stays stale. In `live_states`, if you touch it, we track it.
+
+```dart
+// ❌ Traditional (Riverpod/Provider)
+// You must explicitly watch every single state. High mental overhead.
+final name = ref.watch(nameProvider);
+final age = ref.watch(ageProvider);
+final score = ref.watch(scoreProvider);
+return Text('$name ($age): $score');
+
+// ✅ live_states (Automatic)
+// Just access .value. The Zone-based tracker handles the magic.
+LiveScope.free(
+  builder: (context, _) => Text('${vm.name.value} (${vm.age.value}): ${vm.score.value}')
+)
+```
+
+### 🎯 Surgical Precision with Zero Effort
+Want to rebuild only one `Text` node without triggering a full page re-render? No need to extract widgets or use complex `Selectors`.
+
+```dart
+@override
+Widget build(BuildContext context, UserVM viewModel) {
+  return Scaffold(
+    body: Column(
+      children: [
+        const HeavyStaticWidget(), // This stays static forever
+        LiveScope.vm<UserVM>(
+          builder: (c, vm, _) => Text('Live Score: ${vm.score.value}'), // Surgical update
+        ),
+      ],
+    ),
+  );
+}
+```
 
 ---
 
 ## 🌟 Why live_states?
 
-| Feature | **LiveStates** | Provider | Riverpod | Bloc / Redux | GetX |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Tracking** | **Automatic (Zone)** | Manual (`watch`) | Manual (`ref.watch`) | Manual (Streams) | Automatic (Proxy) |
-| **Boilerplate** | **Zero** | Low to Medium | Medium | High | Low |
-| **Rebuild Scope**| **Granular (Scope)**| Widget-level | Widget-level | Widget-level | Component-level |
-| **Lifecycle** | **Deeply Integrated**| Limited | Explicit | Independent | Global/Manual |
-| **Architecture** | **Native MVVM** | DI-focused | Functional/Global | Event-driven | Variable |
+| Feature | **LiveStates** | Provider / Riverpod | Bloc / Redux | GetX |
+| :--- | :--- | :--- | :--- | :--- |
+| **Tracking** | **Automatic (Zone)** | Manual (`watch`) | Manual (Streams) | Proxy-based |
+| **Boilerplate** | **Zero** | Medium | High | Low |
+| **Precision** | **Surgical (Scope)** | Widget-level | Widget-level | Component-level |
+| **Lifecycle** | **Deep Integration** | Explicit | Independent | Global/Manual |
+| **Architecture** | **Pure MVVM** | Functional/DI | Event-driven | Variable |
 
 ---
 
 ## 🚀 Key Features
 
-- **🚀 Automatic Dependency Tracking**: No need to manually add listeners. If you access a `LiveData` during build inside a `LiveScope`, it's tracked automatically.
-- **🎯 Precise Rebuilds**: Granular control over widget updates with `LiveScope`, minimizing UI jank by isolating rebuilds from parent widgets.
-- **🏗️ Pure MVVM Architecture**: Strictly separates business logic (`LiveViewModel`) from presentation (`LiveWidget`).
-- **♻️ Full Lifecycle Management**: ViewModels are aware of `init`, `dispose`, `activate`, `deactivate`, and `didUpdateWidget`.
-- **🧬 Advanced Mixins**: Built-in support for cascaded refreshes, state recovery, and animation tickers directly in the VM.
-- **📦 Dependency Injection**: Scalable state sharing via `LiveProvider` and global `LiveStore`.
+```mermaid
+graph TD
+    subgraph View_Layer
+        W[LiveWidget] --> S[LiveScope]
+    end
+
+    subgraph Logic_Layer
+        VM[LiveViewModel] --> LD[LiveData]
+        VM --> LC[LiveCompute]
+    end
+
+    LD -- "1. Auto-track (Zone)" --> S
+    LC -- "2. Derived & Filtered" --> S
+    S -- "3. Surgical Rebuild" --> W
+    
+    Action(User_Action) --> VM
+    VM -- "Update .value" --> LD
+```
+
+- **🪄 Magic Dependency Tracking**: Leveraging Dart's `Zone` mechanism to automatically detect dependencies during the build process. No more manual listeners.
+- **🎯 Surgical Rebuilds**: `LiveScope` allows you to isolate updates to the smallest possible Widget node, preventing unnecessary parent re-renders.
+- **🏗️ Pure MVVM Architecture**: A clean separation of concerns. Your View talks to the ViewModel, and the ViewModel manages the State.
+- **♻️ Deep Lifecycle Hooks**: ViewModels that are actually aware of Flutter's lifecycle (`init`, `dispose`, `activate`, `deactivate`).
+- **🧬 Reactive Computing**: `LiveCompute` handles complex derived states with built-in change verification to suppress redundant UI updates.
+- **💾 State Persistence**: `Recoverable` mixin allows your VM state to survive widget unmounting and app restarts effortlessly.
 
 ---
 
-## 📦 Installation
+## 📦 Getting Started
 
-Add this to your `pubspec.yaml`:
-
-```yaml
-dependencies:
-  live_states: ^1.0.0
-```
-
----
-
-## 🚀 exhaustive Feature Guide
-
-### 1. Basic Reactive State (`LiveData`)
-`LiveData` is the atomic unit of state. Use `.value` to trigger rebuilds or `.onlyValue` for silent updates.
-
+### 1. Define your ViewModel
 ```dart
-class UserVM extends LiveViewModel<UserWidget> {
-  // Simple reactive state
-  late final username = LiveData<String>('Guest', owner);
-  
-  void updateUsername(String name) {
-    username.value = name; // Triggers listeners/rebuilds
-  }
+class CounterVM extends LiveViewModel<CounterPage> {
+  // Define reactive data
+  late final counter = LiveData<int>(0, owner);
 
-  void updateSilently(String name) {
-    username.onlyValue = name; // Update data without triggering UI refresh
-  }
+  // Derived state: only notifies if the BOOLEAN result changes!
+  late final isEven = LiveCompute<bool>(owner, () => counter.value % 2 == 0);
+
+  void increment() => counter.value++;
 }
 ```
 
-### 2. Derived State (`LiveCompute`)
-`LiveCompute` creates a value that automatically re-calculates when its dependencies change. It optimizes performance by preventing downstream rebuilds if the *result* of the calculation hasn't changed.
-
+### 2. Build your View
 ```dart
-class CartVM extends LiveViewModel {
-  late final items = LiveData<List<Item>>([], owner);
-  
-  // Re-calculates ONLY when 'items' changes. 
-  // Observers only rebuild if 'totalPrice' actually changes.
-  late final totalPrice = LiveCompute<double>(owner, () {
-    return items.value.fold(0, (sum, item) => sum + item.price);
-  });
-}
-```
+class CounterPage extends LiveWidget {
+  @override
+  CounterVM createViewModel() => CounterVM();
 
-### 3. Precision Rebuilds (`LiveScope`)
-`LiveScope` is the bridge between data and UI. It tracks every `LiveData` accessed within its `builder`.
-
-```dart
-@override
-Widget build(BuildContext context, CounterVM viewModel) {
-  return Column(
-    children: [
-      // Only this specific Text rebuilds when counter changes
-      LiveScope.vm<CounterVM>(
-        builder: (context, vm, child) => Text('Count: ${vm.counter.value}'),
+  @override
+  Widget build(BuildContext context, CounterVM viewModel) {
+    return Scaffold(
+      body: Center(
+        child: LiveScope.vm<CounterVM>(
+          builder: (context, vm, _) => Text('Count: ${vm.counter.value}'),
+        ),
       ),
-      // This part is completely static and NEVER rebuilds
-      const Text('I am a static label'),
-    ],
-  );
-}
-```
-
-### 4. Advanced Lifecycles (`activate` / `deactivate`)
-Ideal for handling visibility changes in `PageView` or `Tab` without polluting the UI layer.
-
-```dart
-class VideoPlayerVM extends LiveViewModel {
-  @override
-  void activate() => player.resume(); // Called when page becomes visible
-
-  @override
-  void deactivate() => player.pause(); // Called when page is hidden
-}
-```
-
-### 5. Cascaded Refresh (`Refreshable`)
-Trigger a recursive reload signal across your entire ViewModel tree with a single call.
-
-```dart
-class ParentVM extends LiveViewModel with Refreshable {
-  @override
-  Future<bool> onRefresh() async {
-    await fetchData();
-    return true;
+      floatingActionButton: FloatingActionButton(onPressed: viewModel.increment),
+    );
   }
-  
-  void pullToRefresh() => refresh(); // Triggers onRefresh here and in all children
 }
 ```
 
-### 6. State Persistence (`Recoverable`)
-Automatically save and restore state when a widget is unmounted and re-mounted (e.g., during complex navigation).
+---
 
+## 🛠️ Advanced Tools
+
+### 🔍 Surgical Precision with `LiveScope`
+You can pass a `child` to `LiveScope` to prevent it from ever rebuilding, even when the scope itself refreshes.
+```dart
+LiveScope.vm<MyVM>(
+  child: MyComplexStaticWidget(), // This is built once and reused
+  builder: (context, vm, child) => Column(
+    children: [
+      Text(vm.data.value),
+      child!, // Never rebuilds
+    ],
+  ),
+)
+```
+
+### 💾 State Recovery (`Recoverable`)
+Keep your UI state alive even when the user navigates away and back.
 ```dart
 class SearchVM extends LiveViewModel with Recoverable {
   @override
-  String get storageKey => 'unique_search_cache_key';
-
-  @override
-  Map<String, dynamic>? storage() => {'query': query.value};
-
-  @override
-  void recover(Map<String, dynamic>? storage) {
-    if (storage != null) query.value = storage['query'];
-  }
-}
-```
-
-### 7. Global & Scoped DI (`LiveStore` / `LiveProvider`)
-Inject and find data across the widget tree effortlessly.
-
-```dart
-// Global Injection (at App root)
-LiveStore(
-  providerCreates: [() => AuthService(), () => AppConfig()],
-  builder: (context) => MyApp(),
-);
-
-// Access anywhere via context
-final auth = context.provider<AuthService>();
-
-// Access globally without context
-final config = LiveStore.provider<AppConfig>();
-```
-
-### 8. Animation Support (`TickerProvider`)
-Manage standard Flutter animations directly inside your ViewModel.
-
-```dart
-class AnimationVM extends LiveViewModel with SingleTickerProviderMixin {
-  late final controller = AnimationController(vsync: this, duration: const Duration(seconds: 1));
+  String get storageKey => 'search_cache';
   
   @override
-  void dispose() {
-    controller.dispose(); // Mixin will assert error if you leak tickers!
-    super.dispose();
+  Map<String, dynamic>? storage() => {'q': query.value};
+  
+  @override
+  void recover(Map<String, dynamic>? s) => query.value = s?['q'] ?? '';
+}
+```
+
+### 🔄 Cascaded Refresh (`Refreshable`)
+Signal a top-down refresh for an entire tree of ViewModels (perfect for pull-to-refresh).
+```dart
+class RootVM extends LiveViewModel with Refreshable {
+  @override
+  Future<bool> onRefresh() async {
+    await loadData();
+    return true; // All child VMs using Refreshable will also be triggered
   }
 }
 ```
 
 ---
 
-## 🛠️ Performance Tuning
+## 🧪 Built for Reliability
+`live_states` is covered by an extensive test suite ensuring memory safety, zero-leak ticker providers, and accurate dependency resolution.
 
-1.  **`followParentUpdate: false`**: Set this in `LiveScope` to make it *completely* independent of parent rebuilds.
-2.  **`LiveScope.child`**: Pass pre-built static widget trees to `child` to avoid re-allocation during local refreshes.
-3.  **`LiveData.onlyValue`**: Use `.onlyValue` to read data without establishing a reactive dependency in a `LiveScope`.
+Check the [Example Project](./example/lib/main.dart) for a full implementation of search filtering and shopping cart logic.
 
 ---
 
-## 🧪 Stability
-
-This package is built with a "test-first" mentality. Every core component is verified against memory leaks, nested dependency resolution, and lifecycle accuracy. Check [TEST_SUITE.md](./test/TEST_SUITE.md) for details.
-
 ## 📄 License
-
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

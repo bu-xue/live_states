@@ -1,8 +1,10 @@
 part of 'live_view.dart';
 
-/// 用来定义当前Widget所对应ViewModel的所有状态，即LiveData对象.
+/// Mixin used to define the state container for [LiveWidget].
+/// 
+/// Typically used by [LiveViewModel] and [LiveProvider] to hold
+/// and manage [LiveData] objects.
 mixin LiveStates {
-
+  /// The manager responsible for automatic disposal and dependency tracking.
   LiveOwner get owner;
-
 }

@@ -1,0 +1,24 @@
+name: Deploy Web Demo
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Build Web
+        run: |
+          cd example
+          flutter build web --release --base-href /live_states/
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: example/build/web
+          branch: gh-pages

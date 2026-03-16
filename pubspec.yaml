@@ -1,13 +1,16 @@
 name: live_states
-description: A high-performance, lightweight MVVM state management tool for Flutter with automatic dependency tracking.
-version: 1.0.0
+description: A high-performance, lightweight MVVM state management framework for Flutter with automatic dependency tracking via Zones.
+version: 1.0.1
+repository: https://github.com/bu-xue/live_states
+issue_tracker: https://github.com/bu-xue/live_states/issues
+homepage: https://github.com/bu-xue/live_states
 
 topics:
   - state-management
   - mvvm
+  - viewmodel
+  - livedata
   - reactive
-  - flutter-web
-  - performance
 
 environment:
   sdk: '>=3.7.0 <4.0.0'

@@ -1,11 +1,14 @@
 part of 'live_view.dart';
 
-/// 可以监听LiveData的监听者。
+/// A mixin that provides observation capabilities for [LiveData].
 mixin LiveObserver on Debugger {
+  /// Internal map to store active subscriptions.
   late final Map<LiveData, StreamSubscription> subscriptions = {};
 
+  /// Callback triggered when any observed [LiveData] changes.
   void onUpdate();
 
+  /// Cancels all active subscriptions and clears the observer.
   void clear() {
     final ss = [...subscriptions.values];
     for (var subscription in ss) {
@@ -14,6 +17,9 @@ mixin LiveObserver on Debugger {
     subscriptions.clear();
   }
 
+  /// Subscribes to a [LiveData] object.
+  /// 
+  /// If the [liveData] is already being observed, this call is ignored.
   void subscribe(LiveData liveData) {
     final debugName = liveData.debugName ?? liveData.name;
     debug('LiveObserver', 'subscribe LiveData($debugName)');

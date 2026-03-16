@@ -1,4 +1,3 @@
-import 'package:live_states/live_states.dart';
 import 'package:live_states/src/live/live_view.dart';
 import 'package:test/test.dart';
 
