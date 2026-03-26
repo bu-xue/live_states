@@ -9,7 +9,7 @@ void main() {
     late MockLiveObserver observer;
 
     setUp(() {
-      owner = LiveOwner.test();
+      owner = LiveOwner.test()..vmDebugId = 'vm';
       counter = LiveData<int>(0, owner, debugName: 'counter');
       observer = MockLiveObserver();
     });
@@ -79,4 +79,7 @@ class MockLiveObserver with Debugger, LiveObserver {
   void onUpdate() {
     update?.call();
   }
+
+  @override
+  String get debugId => 'mock';
 }

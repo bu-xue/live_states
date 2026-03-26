@@ -7,7 +7,16 @@
 /// 4. Zero Integration Cost: MVVM pattern, clearly isolating view and business logic.
 library;
 
-export 'src/live/live_view.dart' hide IgnoreStream, ignoreObserver;
+export 'src/live/live_view.dart'
+    hide
+        IgnoreStream,
+        ignoreObserver,
+        BaseLiveScopeElement,
+        LiveVMScopeElement,
+        LiveProviderScopeElement,
+        LiveFreeScopeElement,
+        InnerLiveProvider,
+        InnerLiveProviderVM;
 
 export 'src/advanced/ticker_provider.dart';
 export 'src/advanced/refreshable.dart';

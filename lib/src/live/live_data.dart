@@ -44,6 +44,7 @@ abstract class _ValueChangeNotifier<T> extends ChangeNotifier with Debugger {
   @mustCallSuper
   void _onUpdateValue(T oldValue, T newValue) {
     onlyValue = newValue;
+    devtools.debugDataChanged(debugId: debugId, value: newValue == null ? null : '$newValue');
     notifyListeners();
   }
 
@@ -207,6 +208,7 @@ class LiveData<T> extends _ValueChangeNotifier<T> with _WithStream<T>, _WithChan
   }) : name = const Uuid().v4(),
        _debugName = debugName {
     owner._addLiveData(this);
+    devtools.debugLiveDataRegister(owner.vmDebugId, this);
   }
 
   @override
@@ -225,6 +227,7 @@ class LiveData<T> extends _ValueChangeNotifier<T> with _WithStream<T>, _WithChan
 
   @override
   void dispose() {
+    devtools.debugLiveDataUnregister(this);
     owner._removeLiveData(this);
     super.dispose();
   }
@@ -236,4 +239,7 @@ class LiveData<T> extends _ValueChangeNotifier<T> with _WithStream<T>, _WithChan
 
   @override
   String? get debugName => _debugName;
+
+  @override
+  String get debugId => name;
 }

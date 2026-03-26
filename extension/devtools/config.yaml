@@ -1,0 +1,5 @@
+name: live_states
+version: 1.1.0
+issueTracker: https://github.com/bu-xue/live_states/issues
+# material icon code for 'hub'
+materialIconCodePoint: "0xf060b" 

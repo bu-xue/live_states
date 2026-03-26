@@ -10,7 +10,7 @@ void main() {
     late LiveCompute<bool> compute;
 
     setUp(() {
-      owner = LiveOwner.test();
+      owner = LiveOwner.test()..vmDebugId = 'vm';
       data1 = LiveData<int>(0, owner, debugName: 'count1');
       data2 = LiveData<int>(1, owner, debugName: 'count2');
       compute = LiveCompute(

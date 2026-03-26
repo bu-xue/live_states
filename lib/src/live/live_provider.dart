@@ -3,10 +3,6 @@ part of 'live_view.dart';
 typedef LiveProviderCreator<P extends LiveProvider> = P Function();
 
 /// Inherit from this class to implement shared data.
-///
-/// [LiveProvider] is similar to [LiveViewModel]. Both mix in [LiveStates] 
-/// and hold a [LiveOwner] to manage [LiveData] objects.
-/// Lifecycle methods include [init] and [dispose].
 abstract class LiveProvider with LiveStates, ContextOwner {
   late LiveOwner _owner;
 
@@ -19,32 +15,24 @@ abstract class LiveProvider with LiveStates, ContextOwner {
   @mustCallSuper
   void dispose() {}
 
-  /// Injects a [LiveProvider] instance into the current subtree.
-  /// Descendant widgets can access it via:
-  /// ```dart
-  /// context.provider<T extends LiveProvider>()
-  /// ```
   static Widget create<P extends LiveProvider>({
     Key? key,
     required LiveProviderCreator creator,
     required WidgetBuilder builder,
+    String? debugName,
   }) {
-    return _LiveProvider.create(
+    return InnerLiveProvider.create(
       key: key,
       creator: creator,
       child: Builder(builder: builder),
+      debugName: debugName,
     );
   }
 
-  /// Injects multiple [LiveProvider] instances.
-  static Widget multi(
-      List<LiveProviderCreator> creators, WidgetBuilder builder) {
+  static Widget multi(List<LiveProviderCreator> creators, WidgetBuilder builder) {
     Widget child = Builder(builder: builder);
     for (var creator in creators.reversed) {
-      child = _LiveProvider.create(
-        creator: creator,
-        child: child,
-      );
+      child = InnerLiveProvider.create(creator: creator, child: child);
     }
     return child;
   }
@@ -53,7 +41,8 @@ abstract class LiveProvider with LiveStates, ContextOwner {
   late final BuildContext context;
 }
 
-class _LiveProvider extends LiveWidget {
+@internal
+class InnerLiveProvider extends LiveWidget {
   final Widget child;
   final LiveProviderCreator creator;
 
@@ -61,19 +50,21 @@ class _LiveProvider extends LiveWidget {
   Widget build(BuildContext context, LiveViewModel viewModel) => child;
 
   @override
-  LiveViewModel createViewModel() => _LiveProviderVM();
+  LiveViewModel createViewModel() => InnerLiveProviderVM();
 
-  const _LiveProvider.create({
+  const InnerLiveProvider.create({
     super.key,
     required this.child,
     required this.creator,
+    super.debugName,
   });
 }
 
-class _LiveProviderVM extends LiveViewModel<_LiveProvider> {
+@internal
+class InnerLiveProviderVM extends LiveViewModel<InnerLiveProvider> {
   late final LiveProvider provider;
 
-  _LiveProviderVM();
+  InnerLiveProviderVM();
 
   @override
   void init() {
@@ -92,12 +83,11 @@ class _LiveProviderVM extends LiveViewModel<_LiveProvider> {
 }
 
 extension Provider4BuildContext on BuildContext {
-  /// Finds the nearest [LiveProvider] of type [Provider] in ancestors.
   Provider? provider<Provider extends LiveProvider>() {
     Provider? findProvider(Element element) {
       if (element is LiveElement) {
         final vm = element.viewModel;
-        if (vm is _LiveProviderVM && vm.provider is Provider) {
+        if (vm is InnerLiveProviderVM && vm.provider is Provider) {
           return vm.provider as Provider;
         }
       }

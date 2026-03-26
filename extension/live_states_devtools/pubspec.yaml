@@ -1,0 +1,27 @@
+name: live_states_devtools
+description: DevTools extension for live_states framework.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+  flutter: ">=3.16.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  devtools_extensions: ^0.5.0
+  devtools_app_shared: ^0.5.0
+  graphview: ^1.5.1
+  animated_tree_view: ^2.3.0
+  dart_scope_functions: ^1.0.7
+  live_states:
+    path: ../../
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

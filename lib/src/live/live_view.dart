@@ -86,7 +86,9 @@ const _inMount = 'inMount';
 /// }
 /// ```
 abstract class LiveWidget extends Widget {
-  const LiveWidget({super.key});
+  final String? debugName;
+
+  const LiveWidget({super.key, this.debugName});
 
   @override
   LiveElement createElement() => LiveElement(this);
@@ -96,7 +98,7 @@ abstract class LiveWidget extends Widget {
   Widget build(BuildContext context, covariant LiveViewModel viewModel);
 }
 
-class LiveElement extends ComponentElement {
+class LiveElement extends ComponentElement with Debugger {
   late LiveViewModel _viewModel;
 
   LiveViewModel get viewModel => _viewModel;
@@ -120,7 +122,6 @@ class LiveElement extends ComponentElement {
       context: this,
     );
     assert(_viewModel._debugLifecycleState == _ViewModelLifecycle.created);
-    // ViewModel must be created before mounting, otherwise the build method cannot access the instance
     runZoned(() => super.mount(parent, newSlot), zoneValues: {_inMount: true});
   }
 
@@ -154,6 +155,7 @@ class LiveElement extends ComponentElement {
     ignoreObserver(() {
       _viewModel.init();
       _viewModel.didChangeDependencies();
+      devtools.debugWidgetMount(_viewModel);
     });
   }
 
@@ -189,6 +191,7 @@ class LiveElement extends ComponentElement {
 
   @override
   void unmount() {
+    devtools.debugWidgetUnmount(_viewModel);
     ignoreObserver(() {
       _viewModel.dispose();
     });
@@ -262,4 +265,7 @@ class LiveElement extends ComponentElement {
     }());
     return super.dependOnInheritedElement(ancestor, aspect: aspect);
   }
+
+  @override
+  String get debugId => 'element_${_viewModel.debugId}';
 }

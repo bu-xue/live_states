@@ -1,6 +1,6 @@
 name: live_states
 description: A high-performance, lightweight MVVM state management framework for Flutter with automatic dependency tracking via Zones.
-version: 1.0.1
+version: 1.1.0
 repository: https://github.com/bu-xue/live_states
 issue_tracker: https://github.com/bu-xue/live_states/issues
 homepage: https://github.com/bu-xue/live_states

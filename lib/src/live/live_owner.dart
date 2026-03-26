@@ -5,6 +5,8 @@ part of 'live_view.dart';
 /// Typically held by [LiveViewModel] and [LiveProvider].
 /// Automatically disposes of [LiveData] objects when it is disposed.
 class LiveOwner {
+  late final String vmDebugId;
+
   @visibleForTesting
   LiveOwner.test();
 
@@ -36,7 +38,9 @@ class LiveOwner {
   /// Creates a VM instance.
   static LiveViewModel createVM(BuildContext context, LiveViewModelCreator create) {
     final owner = LiveOwner._();
-    return create(context, owner);
+    final vm = create(context, owner);
+    owner.vmDebugId = vm.debugId;
+    return vm;
   }
 
   void onLiveDataGet(LiveData liveData) {

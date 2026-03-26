@@ -1,9 +1,22 @@
+import 'package:flutter/foundation.dart';
+
+import 'devtools_helper.dart';
+
 typedef DebuggerCallback = void Function(String tag, String message);
 
 class LiveStatesDebugger {
   LiveStatesDebugger._();
 
-  static bool enabled = false;
+  static DevToolsHelper devtoolsHelper = DevToolsHelper(enable: enabled);
+
+  static bool _enabled = kDebugMode;
+
+  static bool get enabled => _enabled;
+
+  static set enabled(bool value) {
+    _enabled = value;
+    devtoolsHelper.enable = value;
+  }
 
   static DebuggerCallback debuggerCallback = (tag, message) {
     // ignore: avoid_print

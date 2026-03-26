@@ -22,6 +22,9 @@ enum _ViewModelLifecycle {
 abstract class LiveViewModel<L extends LiveWidget>
     with Debugger, ContextOwner, AdvancedNode, LiveStates {
   @override
+  final String debugId;
+
+  @override
   late final LiveOwner owner;
 
   @override
@@ -30,7 +33,7 @@ abstract class LiveViewModel<L extends LiveWidget>
   /// Gets the associated widget.
   L get widget => context.widget as L;
 
-  LiveViewModel();
+  LiveViewModel() : this.debugId = const Uuid().v4();
 
   _ViewModelLifecycle _debugLifecycleState = _ViewModelLifecycle.created;
 

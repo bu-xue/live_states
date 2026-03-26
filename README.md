@@ -14,6 +14,27 @@ A surgical precision, high-performance MVVM framework for Flutter that eliminate
 
 ---
 
+## 🛠️ DevTools Extension: Visual Topology & Inspection
+
+`live_states` comes with a powerful DevTools extension to help you audit your data flow in real-time.
+
+### 1. Visual Data Flow
+See how data flows from `LiveData` through `LiveCompute` and finally into your `Scopes`. The topology graph updates in real-time with pulse animations whenever data changes.
+
+![Visual Topology](./gif/data_flow.gif)
+
+### 2. Perspective Switching
+Seamlessly navigate between the **Widget Tree** and **Data Flow** views. Simply click a node in the left widget tree to find its data, or **double-click** a node in the right graph to locate its owner widget.
+
+![Perspective Switching](./gif/perspective_switch.gif)
+
+### 3. Detailed Inspection
+Hover your mouse over any node to peek at its comprehensive live state, including its unique ID, current value, and a full list of its subjects and observers.
+
+![Detailed Inspection](./gif/detailed_inspection.gif)
+
+---
+
 ## ✨ The "Aha!" Moment
 
 ### 🪄 Implicit vs. Explicit Tracking
@@ -32,25 +53,6 @@ return Text('$name ($age): $score');
 LiveScope.free(
   builder: (context, _) => Text('${vm.name.value} (${vm.age.value}): ${vm.score.value}')
 )
-```
-
-### 🎯 Surgical Precision with Zero Effort
-Want to rebuild only one `Text` node without triggering a full page re-render? No need to extract widgets or use complex `Selectors`.
-
-```dart
-@override
-Widget build(BuildContext context, UserVM viewModel) {
-  return Scaffold(
-    body: Column(
-      children: [
-        const HeavyStaticWidget(), // This stays static forever
-        LiveScope.vm<UserVM>(
-          builder: (c, vm, _) => Text('Live Score: ${vm.score.value}'), // Surgical update
-        ),
-      ],
-    ),
-  );
-}
 ```
 
 ---
@@ -131,58 +133,6 @@ class CounterPage extends LiveWidget {
   }
 }
 ```
-
----
-
-## 🛠️ Advanced Tools
-
-### 🔍 Surgical Precision with `LiveScope`
-You can pass a `child` to `LiveScope` to prevent it from ever rebuilding, even when the scope itself refreshes.
-```dart
-LiveScope.vm<MyVM>(
-  child: MyComplexStaticWidget(), // This is built once and reused
-  builder: (context, vm, child) => Column(
-    children: [
-      Text(vm.data.value),
-      child!, // Never rebuilds
-    ],
-  ),
-)
-```
-
-### 💾 State Recovery (`Recoverable`)
-Keep your UI state alive even when the user navigates away and back.
-```dart
-class SearchVM extends LiveViewModel with Recoverable {
-  @override
-  String get storageKey => 'search_cache';
-  
-  @override
-  Map<String, dynamic>? storage() => {'q': query.value};
-  
-  @override
-  void recover(Map<String, dynamic>? s) => query.value = s?['q'] ?? '';
-}
-```
-
-### 🔄 Cascaded Refresh (`Refreshable`)
-Signal a top-down refresh for an entire tree of ViewModels (perfect for pull-to-refresh).
-```dart
-class RootVM extends LiveViewModel with Refreshable {
-  @override
-  Future<bool> onRefresh() async {
-    await loadData();
-    return true; // All child VMs using Refreshable will also be triggered
-  }
-}
-```
-
----
-
-## 🧪 Built for Reliability
-`live_states` is covered by an extensive test suite ensuring memory safety, zero-leak ticker providers, and accurate dependency resolution.
-
-Check the [Example Project](./example/lib/main.dart) for a full implementation of search filtering and shopping cart logic.
 
 ---
 

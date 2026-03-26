@@ -1,0 +1,10 @@
+# 忽略扩展的源代码项目
+extension/live_states_devtools/
+# 忽略readme动画资源
+gif/
+# 忽略构建脚本
+build_extension.sh
+
+# 允许包含编译后的产物和配置
+!extension/devtools/config.yaml
+!extension/devtools/build/

@@ -70,7 +70,7 @@ void main() {
 
   testWidgets('LiveScope should use explicitly provided viewModel', (WidgetTester tester) async {
     // 构造一个不属于 Widget 树祖先关系的 ViewModel
-    final owner = LiveOwner.test();
+    final owner = LiveOwner.test()..vmDebugId = 'vm';
     final manualVM = CounterVM()
       ..owner = owner
       ..counter.value = 88;
@@ -97,7 +97,7 @@ void main() {
 
   testWidgets('LiveScope.child optimization test', (WidgetTester tester) async {
     int childBuildCount = 0;
-    final owner = LiveOwner.test();
+    final owner = LiveOwner.test()..vmDebugId = 'vm';
     final counter = LiveData<int>(0, owner);
 
     await tester.pumpWidget(MaterialApp(

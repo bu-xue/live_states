@@ -9,7 +9,7 @@ void main() {
     late LiveCompute<bool> compute;
 
     setUp(() {
-      owner = LiveOwner.test();
+      owner = LiveOwner.test()..vmDebugId = 'vm';
       counter1 = LiveData(0, owner);
       counter2 = LiveData(0, owner);
       compute = LiveCompute(owner, () => counter1.value + counter2.value > 100,

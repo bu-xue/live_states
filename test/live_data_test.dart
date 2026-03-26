@@ -9,7 +9,7 @@ void main() {
     late LiveData<int> liveData;
 
     setUp(() {
-      owner = LiveOwner.test();
+      owner = LiveOwner.test()..vmDebugId = 'vm';
       liveData = LiveData<int>(initialValue, owner, debugName: 'testLiveData');
     });
 

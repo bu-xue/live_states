@@ -1,0 +1,20 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+    <!-- 背景 -->
+    <rect width="100%" height="100%" fill="#051923" />
+
+    <!-- 抽象的 Zone 气泡 -->
+    <circle cx="600" cy="200" r="100" fill="none" stroke="#00B4D8" stroke-width="2" opacity="0.5">
+        <animate attributeName="r" values="100;110;100" dur="4s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="600" cy="200" r="60" fill="none" stroke="#90E0EF" stroke-width="1" opacity="0.8" />
+
+    <!-- 追踪线条 -->
+    <line x1="200" y1="200" x2="540" y2="200" stroke="#00B4D8" stroke-width="1" stroke-dasharray="5,5" />
+    <circle cx="200" cy="200" r="4" fill="#ADE8F4" />
+    <circle cx="600" cy="200" r="10" fill="#00B4D8" opacity="0.3" />
+
+    <!-- 文字 -->
+    <text x="50" y="180" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="#CAF0F8">LiveStates</text>
+    <text x="50" y="230" font-family="Arial, sans-serif" font-size="20" fill="#90E0EF" opacity="0.8">Implicit Tracking &amp; Surgical Rebuilds</text>
+    <text x="50" y="350" font-family="Arial, sans-serif" font-size="14" fill="#0077B6">FLUTTER MVVM FRAMEWORK</text>
+</svg>

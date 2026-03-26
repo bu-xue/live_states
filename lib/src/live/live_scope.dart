@@ -117,7 +117,7 @@ class LiveScope<ViewModel extends LiveViewModel> extends _LiveScope {
 
   @override
   Element createElement() {
-    return _LiveVMScopeElement<ViewModel>(this);
+    return LiveVMScopeElement<ViewModel>(this);
   }
 }
 
@@ -140,7 +140,7 @@ class LiveProviderScope<Provider extends LiveProvider> extends _LiveScope {
 
   @override
   Element createElement() {
-    return _LiveProviderScopeElement<Provider>(this);
+    return LiveProviderScopeElement<Provider>(this);
   }
 }
 
@@ -163,7 +163,7 @@ class FreeLiveScope extends _LiveScope {
 
   @override
   Element createElement() {
-    return _LiveFreeScopeElement(this);
+    return LiveFreeScopeElement(this);
   }
 }
 
@@ -183,8 +183,11 @@ abstract class _LiveScope extends Widget {
   Widget build(BuildContext context, covariant LiveStates? states);
 }
 
-abstract class _BaseLiveScopeElement extends ComponentElement
+@internal
+abstract class BaseLiveScopeElement extends ComponentElement
     with Debugger, LiveObserver, _LiveScopeObserver {
+  @override
+  final String debugId;
 
   @override
   String? get debugName => widget.debugName;
@@ -194,7 +197,7 @@ abstract class _BaseLiveScopeElement extends ComponentElement
 
   bool isMounted = false;
 
-  _BaseLiveScopeElement(super.widget);
+  BaseLiveScopeElement(super.widget) : debugId = const Uuid().v4();
 
   @override
   void mount(Element? parent, Object? newSlot) {
@@ -206,21 +209,24 @@ abstract class _BaseLiveScopeElement extends ComponentElement
   void unmount() {
     isMounted = false;
     clear();
+    devtools.debugScopeUnmount(this);
     super.unmount();
   }
 
   @override
   void performRebuild() {
+    if(!isMounted) {
+      devtools.debugScopeMount(this);
+    }
     clear();
-    liveBuild(
-      () => super.performRebuild(),
-    );
+    liveBuild(() => super.performRebuild());
   }
 
   @override
   void onUpdate() {
     if (isMounted) {
       markNeedsBuild();
+      devtools.debugObserverUpdate(debugId: debugId);
     }
   }
 
@@ -234,9 +240,9 @@ abstract class _BaseLiveScopeElement extends ComponentElement
   }
 }
 
-class _LiveVMScopeElement<ViewModel extends LiveViewModel>
-    extends _BaseLiveScopeElement {
-  _LiveVMScopeElement(super.widget);
+@internal
+class LiveVMScopeElement<ViewModel extends LiveViewModel> extends BaseLiveScopeElement {
+  LiveVMScopeElement(super.widget);
 
   @override
   LiveScope get widget => super.widget as LiveScope;
@@ -274,9 +280,9 @@ class _LiveVMScopeElement<ViewModel extends LiveViewModel>
   }
 }
 
-class _LiveProviderScopeElement<Provider extends LiveProvider>
-    extends _BaseLiveScopeElement {
-  _LiveProviderScopeElement(super.widget);
+@internal
+class LiveProviderScopeElement<Provider extends LiveProvider> extends BaseLiveScopeElement {
+  LiveProviderScopeElement(super.widget);
 
   @override
   LiveProviderScope get widget => super.widget as LiveProviderScope;
@@ -310,8 +316,9 @@ class _LiveProviderScopeElement<Provider extends LiveProvider>
   }
 }
 
-class _LiveFreeScopeElement extends _BaseLiveScopeElement {
-  _LiveFreeScopeElement(super.widget);
+@internal
+class LiveFreeScopeElement extends BaseLiveScopeElement {
+  LiveFreeScopeElement(super.widget);
 
   @override
   Widget build() {

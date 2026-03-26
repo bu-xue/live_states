@@ -6,7 +6,7 @@ void main() {
     late LiveOwner owner;
 
     setUp(() {
-      owner = LiveOwner.test();
+      owner = LiveOwner.test()..vmDebugId = 'vm';
     });
 
     tearDown(() {

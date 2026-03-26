@@ -49,6 +49,9 @@ class LiveCompute<T> extends LiveData<T?> with LiveObserver {
     return (Zone.current[_inLiveCompute] as LiveCompute?);
   }
 
+  @override
+  String get debugId => name;
+
   @internal
   @override
   set value(T? value) {
@@ -117,5 +120,9 @@ class LiveCompute<T> extends LiveData<T?> with LiveObserver {
     if (newValue is T) {
       super.value = newValue;
     }
+  }
+
+  void update() {
+    onUpdate();
   }
 }

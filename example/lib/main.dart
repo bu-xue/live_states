@@ -8,32 +8,28 @@ void main() {
   ));
 }
 
-/// 1. ViewModel: 业务逻辑中心
-/// 混入 Recoverable 让搜索词在页面销毁重建后依然存在
+// ==========================================
+// 场景 1: 基础购物车
+// ==========================================
+
 class ShoppingVM extends LiveViewModel<ShoppingPage> with Recoverable {
   @override
   String get storageKey => 'shopping_vm_storage';
 
-  // 响应式状态
-  late final searchKey = LiveData<String>('', owner, debugName: 'search');
+  late final searchKey = LiveData<String>('', owner, debugName: 'search_key');
   late final items = LiveData<List<String>>(
-      ['Apple', 'Banana', 'Cherry', 'Date', 'Eggplant'], owner);
-  late final cart = LiveData<Set<String>>({}, owner, debugName: 'cart');
+      ['Apple', 'Banana', 'Cherry', 'Date', 'Eggplant'], owner, debugName: 'all_products');
+  late final cart = LiveData<Set<String>>({}, owner, debugName: 'shopping_cart');
 
-  // 2. 差异化卖点：LiveCompute (自动追踪依赖 + 结果缓存)
-  // 只有当 searchKey 或 items 改变，且过滤后的结果集变动时，监听者才会刷新
   late final filteredItems = LiveCompute<List<String>>(owner, () {
-    debugPrint('⚡ Re-computing filtered list...');
     if (searchKey.value.isEmpty) return items.value;
     return items.value
         .where((i) => i.toLowerCase().contains(searchKey.value.toLowerCase()))
         .toList();
-  });
+  }, debugName: 'filtered_list_logic');
 
-  // 计算属性：购物车总数
-  late final cartCount = LiveCompute<int>(owner, () => cart.value.length);
+  late final cartCount = LiveCompute<int>(owner, () => cart.value.length, debugName: 'cart_count_logic');
 
-  // Action
   void toggleCart(String item) {
     final newCart = {...cart.value};
     if (newCart.contains(item)) {
@@ -44,7 +40,6 @@ class ShoppingVM extends LiveViewModel<ShoppingPage> with Recoverable {
     cart.value = newCart;
   }
 
-  // 状态恢复逻辑
   @override
   Map<String, dynamic>? storage() => {'search': searchKey.value};
 
@@ -54,7 +49,6 @@ class ShoppingVM extends LiveViewModel<ShoppingPage> with Recoverable {
   }
 }
 
-/// 3. View: 极简的声明式 UI
 class ShoppingPage extends LiveWidget {
   const ShoppingPage({super.key});
 
@@ -83,12 +77,11 @@ class ShoppingPage extends LiveWidget {
             ),
           ),
           Expanded(
-            // 局部刷新范围：仅列表部分
             child: LiveScope.free(
+              debugName: 'ProductListView',
               builder: (context, _) {
                 final list = viewModel.filteredItems.value;
                 if (list.isEmpty) return const Center(child: Text('No items found.'));
-
                 return ListView.builder(
                   itemCount: list.length,
                   itemBuilder: (context, index) {
@@ -96,6 +89,7 @@ class ShoppingPage extends LiveWidget {
                     return ListTile(
                       title: Text(item),
                       trailing: LiveScope.free(
+                        debugName: 'CartItem_$item',
                         builder: (context, _) {
                           final isInCart = viewModel.cart.value.contains(item);
                           return IconButton(
@@ -113,27 +107,23 @@ class ShoppingPage extends LiveWidget {
           ),
         ],
       ),
-      floatingActionButton: RepaintBoundary(
-        child: LiveScope.free(
-          child: const Icon(Icons.shopping_cart),
-          builder: (context, child) => Badge(
-            label: Text('${viewModel.cartCount.value}'),
-            isLabelVisible: viewModel.cartCount.value > 0,
-            child: IconButton(
-              onPressed: () {
-                final count = viewModel.cartCount.value;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content: Text(count > 0
-                          ? 'You have $count items in cart'
-                          : 'Cart is empty')),
-                );
-              },
-              icon: child!,
-            ),
+      floatingActionButton: LiveScope.free(
+        debugName: 'CartBadgeFAB',
+        builder: (context, _) => Badge(
+          label: Text('${viewModel.cartCount.value}'),
+          isLabelVisible: viewModel.cartCount.value > 0,
+          child: FloatingActionButton(
+            onPressed: () {
+              final count = viewModel.cartCount.value;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(count > 0 ? 'You have $count items' : 'Cart empty')),
+              );
+            },
+            child: const Icon(Icons.shopping_cart),
           ),
         ),
       ),
     );
   }
 }
+
